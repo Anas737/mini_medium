@@ -1,0 +1,20 @@
+.home-page {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  grid-template-areas:
+    "header  header"
+    "article  search";
+}
+
+.home-page header {
+  grid-area: header;
+}
+
+.home-page main {
+  grid-area: article;
+}
+
+.home-page aside {
+  grid-area: search;
+  padding: 30px;
+}

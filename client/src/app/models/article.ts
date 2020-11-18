@@ -2,6 +2,7 @@ import { Comment } from './comment';
 import { ListModel, Model } from './model';
 import { Reaction } from './reaction';
 import { Tag } from './tag';
+import { User } from './user';
 
 export class Article extends Model {
   id: number;
@@ -10,10 +11,12 @@ export class Article extends Model {
   content: string;
   draft: boolean;
 
+  user: string;
   tags: string[];
   reactions: string[];
   comments: string[];
 
+  populatedUser?: User;
   populatedTags?: Tag[] = [];
   populatedReactions?: Reaction[] = [];
   populatedComments?: Comment[] = [];

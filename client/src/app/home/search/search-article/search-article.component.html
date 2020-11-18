@@ -1,1 +1,6 @@
-<p>search-article works!</p>
+<article class="card mb-4" (click)="onSelectArticle()">
+  <div class="card-body">
+    <h5 class="card-title">{{ article.name }}</h5>
+    {{ article.content }}
+  </div>
+</article>

@@ -1,1 +1,14 @@
-<p>article works!</p>
+<div class="container">
+  <div *ngIf="!hasArticle">Select an article to display it here !</div>
+
+  <article>
+    <h1>{{ article.name }}</h1>
+    <p>
+      {{ article.user }}
+    </p>
+
+    <section>
+      {{ article.content }}
+    </section>
+  </article>
+</div>

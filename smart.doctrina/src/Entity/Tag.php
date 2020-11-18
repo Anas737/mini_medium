@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -13,6 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Tag Entity
  *
  * @ApiResource
+ * @ApiFilter(SearchFilter::class, properties={"articles": "partial"})
  * @ORM\Entity
  * @ORM\Table(name="tags")
  */

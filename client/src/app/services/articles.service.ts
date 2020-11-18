@@ -2,8 +2,9 @@ import { HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, tap } from 'rxjs/operators';
-import { Article, Articles, Comment, Reaction, Tag } from '../models';
+import { Article, Articles, Comment, Reaction, Tag, User } from '../models';
 import { ApiService } from './api.service';
+import { profilesService } from './profiles.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +17,10 @@ export class ArticlesService {
     {} as Article
   );
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private profilesService: profilesService
+  ) {}
 
   get articles(): Articles {
     return this.articlesSubject.value;
@@ -30,13 +34,27 @@ export class ArticlesService {
     return this.articlesSubject.pipe(distinctUntilChanged());
   }
 
-  get article$(): Observable<Articles> {
-    return this.articlesSubject.pipe(distinctUntilChanged());
+  get displayedArticle$(): Observable<Article> {
+    return this.articleSubject.pipe(distinctUntilChanged());
   }
 
   updateSubjects(articles: Articles, article: Article) {
     this.articleSubject.next(article);
     this.articlesSubject.next(articles);
+  }
+
+  select(article: Article): Observable<User> {
+    if (!article.user) return;
+
+    return this.profilesService
+      .getOne(article.user.replace('/users', 'profiles'))
+      .pipe(
+        tap((_profile) => {
+          article.populatedUser = _profile;
+
+          this.articleSubject.next(article);
+        })
+      );
   }
 
   getAll(): Observable<Articles> {
@@ -282,7 +300,7 @@ export class ArticlesService {
           (_article) => _article['@id'] === articleIRI
         );
 
-        article.tags.push(_tag);
+        article.populatedTags.push(_tag);
 
         this.updateSubjects(articles, article);
       })
