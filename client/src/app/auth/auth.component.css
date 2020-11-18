@@ -1,0 +1,15 @@
+.auth-page {
+  height: 100vh;
+}
+
+.auth-page li {
+  cursor: pointer;
+}
+
+.auth-form {
+  width: 400px;
+}
+
+.auth-form .card {
+  height: 100%;
+}

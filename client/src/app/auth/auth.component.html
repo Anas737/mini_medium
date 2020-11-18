@@ -1,0 +1,86 @@
+<div class="auth-page d-flex justify-content-center align-items-center">
+  <form [formGroup]="authForm" (ngSubmit)="submitForm()" class="auth-form">
+    <div class="card">
+      <div class="card-body d-flex flex-column">
+        <!-- Navigation -->
+        <ul class="nav nav-tabs">
+          <li
+            class="nav-item nav-link"
+            [ngClass]="{ active: !isForRegistering }"
+            (click)="onSetAuthType(false)"
+          >
+            Login
+          </li>
+          <li
+            class="nav-item nav-link"
+            [ngClass]="{ active: isForRegistering }"
+            (click)="onSetAuthType(true)"
+          >
+            Register
+          </li>
+        </ul>
+        <!-- End Navigation -->
+
+        <!-- Form Controls -->
+        <div class="py-2">
+          <fieldset *ngIf="isForRegistering" class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              class="form-control"
+              id="username"
+              placeholder="Enter username"
+              formControlName="username"
+            />
+            <small class="form-text text-muted">Errors</small>
+          </fieldset>
+
+          <fieldset class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              placeholder="Enter email"
+              formControlName="email"
+            />
+            <small class="form-text text-muted">Errors</small>
+          </fieldset>
+
+          <fieldset class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              placeholder="Enter password"
+              formControlName="password"
+            />
+            <small class="form-text text-muted">Errors</small>
+          </fieldset>
+
+          <fieldset *ngIf="isForRegistering" class="form-group">
+            <label for="confirmPassword">Confirm password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="confirmPassword"
+              placeholder="Confirm password"
+              formControlName="confirmPassword"
+            />
+            <small class="form-text text-muted">Errors</small>
+          </fieldset>
+        </div>
+        <!-- End Form Controls -->
+
+        <!-- Submit button -->
+        <button class="btn btn-sm btn-info ml-auto">
+          <span *ngIf="isForRegistering; then register; else signin"></span>
+
+          <ng-template #register>Create account</ng-template>
+          <ng-template #signin>Sign in</ng-template>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
