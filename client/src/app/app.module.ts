@@ -13,6 +13,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpHeadersInterceptorProvider } from './interceptors';
 import { HttpClientModule } from '@angular/common/http';
+import { CommentComponent } from './home/article/comment/comment.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { HttpClientModule } from '@angular/common/http';
     SearchComponent,
     SearchArticleComponent,
     AuthComponent,
+    CommentComponent,
   ],
   imports: [
     BrowserModule,

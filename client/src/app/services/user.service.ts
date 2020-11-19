@@ -55,11 +55,11 @@ export class UserService {
   }
 
   register(credentials: User): Observable<User> {
-    return this.apiService.post('users', credentials);
+    return this.apiService.post('/users', credentials);
   }
 
   login(credentials: User): Observable<User> {
-    return this.apiService.post('users/login', credentials).pipe(
+    return this.apiService.post('/users/login', credentials).pipe(
       tap((loggedUser) => {
         this.setAuth(loggedUser);
       })
@@ -67,7 +67,7 @@ export class UserService {
   }
 
   get(): Observable<User> {
-    return this.apiService.get('user').pipe(
+    return this.apiService.get('/user').pipe(
       tap(
         (currentUser) => {
           this.userSubject.next(currentUser);
@@ -81,7 +81,7 @@ export class UserService {
   }
 
   update(toUpdate: User): Observable<User> {
-    return this.apiService.post('user', toUpdate).pipe(
+    return this.apiService.post('/user', toUpdate).pipe(
       tap((updatedUser) => {
         this.userSubject.next(updatedUser);
       })

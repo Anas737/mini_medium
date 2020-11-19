@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * User Entity
  *
  * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"email": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"email": "exact", "username":"exact"})
  * @ORM\Entity
  * @ORM\Table(name="users")
  */

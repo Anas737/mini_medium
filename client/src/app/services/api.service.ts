@@ -15,7 +15,7 @@ export class ApiService {
   }
 
   private getPath(route: string) {
-    return `${environment.api_url}/${route}`;
+    return `${environment.api_url}${route}`;
   }
 
   get(route: string, params: HttpParams = new HttpParams()): Observable<any> {

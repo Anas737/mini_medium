@@ -1,0 +1,23 @@
+.reaction {
+  margin-left: 1.5rem;
+  font-weight: 500;
+
+  padding: 0.5rem;
+
+  cursor: pointer;
+  position: relative;
+}
+
+.reaction:hover {
+  background-color: #0000000e;
+  border-radius: 10px;
+}
+
+.comments-container {
+  background-color: #0000000e;
+}
+
+.comments-container textarea {
+  resize: none;
+  font-size: 0.8rem;
+}

@@ -1,14 +1,49 @@
-<div class="container">
+<div class="container px-5">
   <div *ngIf="!hasArticle">Select an article to display it here !</div>
 
-  <article>
+  <article *ngIf="hasArticle">
     <h1>{{ article.name }}</h1>
-    <p>
-      {{ article.user }}
-    </p>
+    <p>Author: {{ article.user }} - Published at {{ article.createdAt }}</p>
 
-    <section>
+    <section class="mt-4">
       {{ article.content }}
+
+      <footer class="reactions-container d-flex justify-content-end">
+        <span class="reaction">
+          <i class="fas fa-heart"></i>
+          12
+        </span>
+        <span class="reaction">
+          <i class="far fa-lightbulb"></i>
+          5
+        </span>
+        <span class="reaction">
+          <i class="far fa-thumbs-up"></i>
+          3
+        </span>
+      </footer>
+    </section>
+
+    <section
+      class="comments-container d-flex flex-column justify-content-center p-2 mt-3"
+    >
+      <app-comment
+        *ngFor="let comment of article.populatedComments"
+        [comment]="comment"
+      ></app-comment>
+
+      <form class="d-flex flex-column mt-4">
+        <textarea
+          name="comment-input"
+          rows="3"
+          placeholder="Write comment..."
+          class="form-control"
+        ></textarea>
+
+        <button type="submit" class="btn btn-sm btn-secondary ml-auto mt-2">
+          Comment
+        </button>
+      </form>
     </section>
   </article>
 </div>

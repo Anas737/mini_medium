@@ -6,11 +6,11 @@ import { ApiService } from './api.service';
 @Injectable({
   providedIn: 'root',
 })
-export class profilesService {
+export class ProfilesService {
   constructor(private apiService: ApiService) {}
 
   getAll(): Observable<User[]> {
-    return this.apiService.get('users');
+    return this.apiService.get('/users');
   }
 
   getOne(userIRI: string): Observable<User> {

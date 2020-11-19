@@ -1,10 +1,10 @@
 import { HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { distinctUntilChanged, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, forkJoin, Observable } from 'rxjs';
+import { distinctUntilChanged, mergeMap, tap } from 'rxjs/operators';
 import { Article, Articles, Comment, Reaction, Tag, User } from '../models';
 import { ApiService } from './api.service';
-import { profilesService } from './profiles.service';
+import { ProfilesService } from './profiles.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +19,7 @@ export class ArticlesService {
 
   constructor(
     private apiService: ApiService,
-    private profilesService: profilesService
+    private profilesService: ProfilesService
   ) {}
 
   get articles(): Articles {
@@ -38,28 +38,37 @@ export class ArticlesService {
     return this.articleSubject.pipe(distinctUntilChanged());
   }
 
-  updateSubjects(articles: Articles, article: Article) {
-    this.articleSubject.next(article);
+  updateArticles(articles: Articles) {
     this.articlesSubject.next(articles);
   }
 
   select(article: Article): Observable<User> {
     if (!article.user) return;
 
-    return this.profilesService
-      .getOne(article.user.replace('/users', 'profiles'))
-      .pipe(
-        tap((_profile) => {
-          article.populatedUser = _profile;
+    const user$ = this.profilesService.getOne(
+      article.user.replace('users', 'profiles')
+    );
+    const comments$ = this.getComments(article['@id']);
+    const reactions$ = this.getReactions(article['@id']);
+    const tags$ = this.getTags(article['@id']);
 
-          this.articleSubject.next(article);
-        })
-      );
+    forkJoin([user$, comments$, reactions$, tags$]).subscribe(
+      ([_user, _comments, _reactions, _tags]) => {
+        article.populatedUser = _user;
+        article.populatedComments = _comments['hydra:member'];
+        article.populatedReactions = _reactions['hydra:member'];
+        article.populatedTags = _tags['hydra:member'];
+
+        this.articleSubject.next(article);
+      }
+    );
+
+    return user$;
   }
 
   getAll(): Observable<Articles> {
     return this.apiService
-      .get('articles')
+      .get('/articles')
       .pipe(tap((_articles) => this.articlesSubject.next(_articles)));
   }
 
@@ -67,7 +76,7 @@ export class ArticlesService {
 
   getOne(articleId: number): Observable<Article> {
     return this.apiService
-      .get(`articles${articleId}`)
+      .get(`/articles${articleId}`)
       .pipe(tap((_article) => this.articleSubject.next(_article)));
   }
 
@@ -76,11 +85,11 @@ export class ArticlesService {
   }
 
   update(articleId: number, articleData: Article): Observable<Article> {
-    return this.apiService.put(`articles/${articleId}`, articleData);
+    return this.apiService.put(`/articles/${articleId}`, articleData);
   }
 
   delete(articleId: number): Observable<Article> {
-    return this.apiService.delete(`articles/${articleId}`).pipe(
+    return this.apiService.delete(`/articles/${articleId}`).pipe(
       tap(() => {
         const _articles = this.articles['hydra:member'].filter((_article) => {
           _article.id !== articleId;
@@ -89,7 +98,11 @@ export class ArticlesService {
         const articles = { ...this.articles };
         articles['hydra:member'] = _articles;
 
-        this.updateSubjects(articles, this.displayedArticle);
+        this.updateArticles(articles);
+
+        if (this.displayedArticle && this.displayedArticle.id === articleId) {
+          this.articleSubject.next({} as Article);
+        }
       })
     );
   }
@@ -98,7 +111,7 @@ export class ArticlesService {
   getComments(articleIRI: string): Observable<Comment[]> {
     return this.apiService
       .get(
-        `comments`,
+        `/comments`,
         new HttpParams({
           fromObject: {
             article: articleIRI,
@@ -115,13 +128,13 @@ export class ArticlesService {
 
           article.populatedComments = _comments;
 
-          this.updateSubjects(articles, article);
+          this.updateArticles(articles);
         })
       );
   }
 
   addComment(commentData: Comment): Observable<Comment> {
-    return this.apiService.post('comments', commentData).pipe(
+    return this.apiService.post('/comments', commentData).pipe(
       tap((_comment: Comment) => {
         const articles = { ...this.articles };
 
@@ -131,13 +144,13 @@ export class ArticlesService {
 
         article.populatedComments.push(_comment);
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }
 
   updateComment(commentId: number, commentData: Comment): Observable<Comment> {
-    return this.apiService.put(`comments/${commentId}`, commentData).pipe(
+    return this.apiService.put(`/comments/${commentId}`, commentData).pipe(
       tap((_comment: Comment) => {
         const articles = { ...this.articles };
 
@@ -147,13 +160,13 @@ export class ArticlesService {
 
         article.populatedComments.push(_comment);
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }
 
   deleteComment(commentId: number): Observable<Comment> {
-    return this.apiService.delete(`comments/${commentId}`).pipe(
+    return this.apiService.delete(`/comments/${commentId}`).pipe(
       tap((_comment: Comment) => {
         const articles = { ...this.articles };
 
@@ -165,7 +178,7 @@ export class ArticlesService {
           (__comment) => __comment.id === _comment.id
         );
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }
@@ -174,7 +187,7 @@ export class ArticlesService {
   getReactions(articleIRI: string): Observable<Reaction[]> {
     return this.apiService
       .get(
-        `reactions`,
+        `/reactions`,
         new HttpParams({
           fromObject: {
             article: articleIRI,
@@ -191,13 +204,13 @@ export class ArticlesService {
 
           article.populatedReactions = _reactions;
 
-          this.updateSubjects(articles, article);
+          this.updateArticles(articles);
         })
       );
   }
 
   addReaction(reactionData: Reaction): Observable<Reaction> {
-    return this.apiService.post('reactions', reactionData).pipe(
+    return this.apiService.post('/reactions', reactionData).pipe(
       tap((_reaction: Reaction) => {
         const articles = { ...this.articles };
 
@@ -207,7 +220,7 @@ export class ArticlesService {
 
         article.populatedReactions.push(_reaction);
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }
@@ -216,7 +229,7 @@ export class ArticlesService {
     reactionId: number,
     reactionData: Reaction
   ): Observable<Reaction> {
-    return this.apiService.put(`reactions/${reactionId}`, reactionData).pipe(
+    return this.apiService.put(`/reactions/${reactionId}`, reactionData).pipe(
       tap((_reaction: Reaction) => {
         const articles = { ...this.articles };
 
@@ -226,13 +239,13 @@ export class ArticlesService {
 
         article.populatedReactions.push(_reaction);
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }
 
   deleteReaction(reactionId: number): Observable<Reaction> {
-    return this.apiService.delete(`reactions/${reactionId}`).pipe(
+    return this.apiService.delete(`/reactions/${reactionId}`).pipe(
       tap((_reaction: Reaction) => {
         const articles = { ...this.articles };
 
@@ -244,7 +257,7 @@ export class ArticlesService {
           (__reaction) => __reaction.id === _reaction.id
         );
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }
@@ -253,7 +266,7 @@ export class ArticlesService {
   getTags(articleIRI: string): Observable<Tag[]> {
     return this.apiService
       .get(
-        `tags`,
+        `/tags`,
         new HttpParams({
           fromObject: {
             article: articleIRI,
@@ -270,13 +283,13 @@ export class ArticlesService {
 
           article.populatedTags = _tags;
 
-          this.updateSubjects(articles, article);
+          this.updateArticles(articles);
         })
       );
   }
 
   addTag(articleIRI: string, tagData: Tag): Observable<Tag> {
-    return this.apiService.post('tags', tagData).pipe(
+    return this.apiService.post('/tags', tagData).pipe(
       tap((_tag: Tag) => {
         const articles = { ...this.articles };
 
@@ -286,13 +299,13 @@ export class ArticlesService {
 
         article.populatedTags.push(_tag);
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }
 
   updateTag(articleIRI: string, tagId: number, tagData: Tag): Observable<Tag> {
-    return this.apiService.put(`tags/${tagId}`, tagData).pipe(
+    return this.apiService.put(`/tags/${tagId}`, tagData).pipe(
       tap((_tag: Tag) => {
         const articles = { ...this.articles };
 
@@ -302,13 +315,13 @@ export class ArticlesService {
 
         article.populatedTags.push(_tag);
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }
 
   deleteTag(articleIRI: string, tagId: number): Observable<Tag> {
-    return this.apiService.delete(`tags/${tagId}`).pipe(
+    return this.apiService.delete(`/tags/${tagId}`).pipe(
       tap((_tag: Tag) => {
         const articles = { ...this.articles };
 
@@ -320,7 +333,7 @@ export class ArticlesService {
           (__tag) => __tag.id === _tag.id
         );
 
-        this.updateSubjects(articles, article);
+        this.updateArticles(articles);
       })
     );
   }

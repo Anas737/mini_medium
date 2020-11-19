@@ -1,3 +1,7 @@
 <div class="container d-flex mt-2">
-  <a class="ml-auto">Logout</a>
+  <a class="ml-auto" (click)="onAuth()">
+    <span *ngIf="isAuthenticated; then logout; else signin"></span>
+    <ng-template #logout>Logout</ng-template>
+    <ng-template #signin>Sign in</ng-template>
+  </a>
 </div>
