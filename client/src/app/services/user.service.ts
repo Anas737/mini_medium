@@ -77,7 +77,6 @@ export class UserService {
           this.userSubject.next(currentUser);
         },
         (err) => {
-          console.log(err);
           this.purgeAuth();
         }
       )

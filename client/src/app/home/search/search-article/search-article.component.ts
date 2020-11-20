@@ -16,8 +16,6 @@ export class SearchArticleComponent implements OnInit {
   ngOnInit(): void {}
 
   onSelectArticle() {
-    this.articlesService
-      .select(this.article)
-      .subscribe((profile) => console.log(profile));
+    this.articlesService.select(this.article).subscribe();
   }
 }

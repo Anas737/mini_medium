@@ -63,8 +63,6 @@ export class ArticlesService {
 
         articles[articleIndex] = article;
 
-        console.log('getAll', article);
-
         this.articlesSubject.next(articles);
         this.articleSubject.next(article);
       }
@@ -162,7 +160,6 @@ export class ArticlesService {
     commentId: number,
     commentData: Comment
   ): Observable<Comment> {
-    console.log('azdazdaz', commentId);
     return this.apiService.put(`/comments/${commentId}`, commentData).pipe(
       tap((_comment: Comment) => {
         const articles = { ...this.articles };
@@ -231,8 +228,6 @@ export class ArticlesService {
 
         article.populatedReactions.push(_reaction);
 
-        console.log('addRextion', article);
-
         this.articlesSubject.next(articles);
         this.articleSubject.next(article);
       })
@@ -267,8 +262,6 @@ export class ArticlesService {
   deleteReaction(articleId: number, reactionId: number): Observable<Reaction> {
     return this.apiService.delete(`/reactions/${reactionId}`).pipe(
       tap(() => {
-        console.log('deleteReaction', articleId);
-
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(

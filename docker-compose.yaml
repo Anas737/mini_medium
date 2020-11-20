@@ -9,7 +9,7 @@ x-cache-from:
 services:
   php:
     build:
-      context: ./api
+      context: ./smart.doctrina
       target: api_platform_php
       <<: *api-cache-from
     image: ${PHP_IMAGE:-quay.io/api-platform/php}
@@ -30,7 +30,7 @@ services:
 
   api:
     build:
-      context: ./api
+      context: ./smart.doctrina
       target: api_platform_nginx
       <<: *api-cache-from
     image: ${NGINX_IMAGE:-quay.io/api-platform/nginx}
@@ -109,25 +109,6 @@ services:
       - target: 3000
         published: 443
         protocol: tcp
-
-  admin:
-    build:
-      context: ./admin
-      target: api_platform_admin_development
-      cache_from:
-        - ${ADMIN_IMAGE:-quay.io/api-platform/admin}
-    image: ${ADMIN_IMAGE:-quay.io/api-platform/admin}
-    tty: true # https://github.com/facebook/create-react-app/issues/8688
-    depends_on:
-      - dev-tls
-    volumes:
-      - ./admin:/usr/src/admin:rw,cached
-      - dev-certs:/usr/src/admin/node_modules/webpack-dev-server/ssl:rw,nocopy
-    ports:
-      - target: 3000
-        published: 444
-        protocol: tcp
-
   dev-tls:
     build:
       context: ./docker/dev-tls
@@ -138,6 +119,24 @@ services:
         published: 80
         protocol: tcp
 
+  client:
+    build:
+      context:../../client
+    ports:
+     - 4200:4200
+    volumes:
+     - client:/client
+
+  smart-auth:
+    build:
+      context:../../smart.auth
+    ports:
+     - 3000:3000
+    volumes:
+    - smart-auth:/smart-auth
+    
 volumes:
   db-data: {}
   dev-certs: {}
+  client:
+  smart-auth:

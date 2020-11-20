@@ -37,7 +37,6 @@ export class ArticlesController {
         @User() user: UserDTO,
         @Body() articleData: ArticleDTO,
     ): Promise<ArticleDTO> {
-        console.log(articleData);
         return await this.articlesService.create(user, articleData);
     }
 

@@ -19,9 +19,7 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.articles = _articles['hydra:member'];
     });
 
-    this.articlesService
-      .getAll()
-      .subscribe((_articles) => console.log(_articles));
+    this.articlesService.getAll().subscribe();
   }
 
   ngOnDestroy(): void {

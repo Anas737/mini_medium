@@ -66,7 +66,6 @@ export class ArticleComponent implements OnInit, OnDestroy {
 
     this.articleSub = this.articlesService.displayedArticle$.subscribe(
       (_article) => {
-        console.log('nezaneaze', _article);
         this.article = _article;
 
         const _articlesReactions = {
@@ -108,8 +107,6 @@ export class ArticleComponent implements OnInit, OnDestroy {
     let comment$ = null;
 
     if (this.isEdittingComment) {
-      console.log(this.commentToEdit.id);
-
       comment$ = this.articlesService.updateComment(
         this.article.id,
         this.commentToEdit.id,
