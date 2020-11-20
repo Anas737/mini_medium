@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use \Datetime;
+
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
@@ -17,6 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource
  * @ApiFilter(SearchFilter::class, properties={"tags": "exact", "content": "partial"})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="articles")
  */
 class Article
@@ -159,5 +162,17 @@ class Article
     public function removeReaction(Reaction $_reaction) {
         $this->reactions->removeElement($_reaction);
         $_reaction->article = null;
+    }
+
+    /**
+    * @ORM\PrePersist
+    * @ORM\PreUpdate
+    */
+    public function updatedTimestamps(): void
+    {
+        $this->setUpdatedAt(new DateTime('now'));
+        if ($this->getCreatedAt() === null) {
+            $this->setCreatedAt(new DateTime('now'));
+        }
     }
 }

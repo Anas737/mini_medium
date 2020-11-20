@@ -1,9 +1,29 @@
-<div class="card card-body mb-2">
+<div class="mb-2">
   <div class="d-flex justify-content-between">
-    <img />
+    <div class="commenter-img"></div>
 
-    <div class="comment-container">
-      {{ comment.content }}
+    <div class="content-container">
+      <div class="d-flex jusitfy-content-between">
+        <i *ngIf="isAuthor" class="mr-auto">Author</i>
+        <div *ngIf="isUser || isAdmin" class="ml-auto">
+          <button type="button" (click)="onEditComment()" class="btn">
+            <i class="fas fa-edit"></i>
+          </button>
+
+          <button
+            type="button"
+            [disabled]="!canDelete"
+            (click)="onDeleteComment()"
+            class="btn"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="content-container">
+        {{ comment.content }}
+      </div>
     </div>
   </div>
 </div>

@@ -59,8 +59,10 @@ export class AuthComponent implements OnInit {
       : this.userService.login(user);
 
     auth$.subscribe((user) => {
-      console.log(user);
-      this.router.navigateByUrl('/');
+      if (!this.isForRegistering) this.router.navigateByUrl('/');
+
+      this.isSubmitting = false;
+      this.isForRegistering = false;
     });
   }
 
@@ -74,6 +76,10 @@ export class AuthComponent implements OnInit {
       );
       this.authForm.addControl(
         'confirmPassword',
+        new FormControl('', Validators.required)
+      );
+      this.authForm.addControl(
+        'role',
         new FormControl('', Validators.required)
       );
     } else {

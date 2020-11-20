@@ -1,20 +1,21 @@
 import { HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, combineLatest, forkJoin, Observable } from 'rxjs';
-import { distinctUntilChanged, mergeMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, Observable } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { Article, Articles, Comment, Reaction, Tag, User } from '../models';
 import { ApiService } from './api.service';
 import { ProfilesService } from './profiles.service';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ArticlesService {
   private articlesSubject: BehaviorSubject<Articles> = new BehaviorSubject(
-    {} as Articles
+    new Articles()
   );
   private articleSubject: BehaviorSubject<Article> = new BehaviorSubject(
-    {} as Article
+    new Article()
   );
 
   constructor(
@@ -31,15 +32,11 @@ export class ArticlesService {
   }
 
   get articles$(): Observable<Articles> {
-    return this.articlesSubject.pipe(distinctUntilChanged());
+    return this.articlesSubject;
   }
 
   get displayedArticle$(): Observable<Article> {
-    return this.articleSubject.pipe(distinctUntilChanged());
-  }
-
-  updateArticles(articles: Articles) {
-    this.articlesSubject.next(articles);
+    return this.articleSubject;
   }
 
   select(article: Article): Observable<User> {
@@ -55,10 +52,20 @@ export class ArticlesService {
     forkJoin([user$, comments$, reactions$, tags$]).subscribe(
       ([_user, _comments, _reactions, _tags]) => {
         article.populatedUser = _user;
-        article.populatedComments = _comments['hydra:member'];
-        article.populatedReactions = _reactions['hydra:member'];
-        article.populatedTags = _tags['hydra:member'];
+        article.populatedComments = _comments;
+        article.populatedReactions = _reactions;
+        article.populatedTags = _tags;
 
+        const articles = { ...this.articles };
+        const articleIndex = articles['hydra:member'].findIndex(
+          (_article) => _article.id === article.id
+        );
+
+        articles[articleIndex] = article;
+
+        console.log('getAll', article);
+
+        this.articlesSubject.next(articles);
         this.articleSubject.next(article);
       }
     );
@@ -98,10 +105,10 @@ export class ArticlesService {
         const articles = { ...this.articles };
         articles['hydra:member'] = _articles;
 
-        this.updateArticles(articles);
+        this.articlesSubject.next(articles);
 
         if (this.displayedArticle && this.displayedArticle.id === articleId) {
-          this.articleSubject.next({} as Article);
+          this.articleSubject.next(new Article());
         }
       })
     );
@@ -119,66 +126,70 @@ export class ArticlesService {
         })
       )
       .pipe(
-        tap((_comments: Comment[]) => {
-          const articles = { ...this.articles };
-
-          const article = articles['hydra:member'].find(
-            (_article) => _article['@id'] === articleIRI
-          );
-
-          article.populatedComments = _comments;
-
-          this.updateArticles(articles);
+        map((_comments: Comment[]) => {
+          return _comments['hydra:member'];
         })
       );
   }
 
-  addComment(commentData: Comment): Observable<Comment> {
+  addComment(articleId: number, commentData: Comment): Observable<Comment> {
     return this.apiService.post('/comments', commentData).pipe(
       tap((_comment: Comment) => {
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === commentData.article
+          (_article) => _article.id === articleId
         );
 
         article.populatedComments.push(_comment);
 
-        this.updateArticles(articles);
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }
 
-  updateComment(commentId: number, commentData: Comment): Observable<Comment> {
+  updateComment(
+    articleId: number,
+    commentId: number,
+    commentData: Comment
+  ): Observable<Comment> {
+    console.log('azdazdaz', commentId);
     return this.apiService.put(`/comments/${commentId}`, commentData).pipe(
       tap((_comment: Comment) => {
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === commentData.article
+          (_article) => _article.id === articleId
         );
 
-        article.populatedComments.push(_comment);
+        const commentIndex = article.populatedComments.findIndex(
+          (__comment) => __comment.id === commentId
+        );
 
-        this.updateArticles(articles);
+        article.populatedComments[commentIndex] = _comment;
+
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }
 
-  deleteComment(commentId: number): Observable<Comment> {
+  deleteComment(articleId: number, commentId: number): Observable<Comment> {
     return this.apiService.delete(`/comments/${commentId}`).pipe(
       tap((_comment: Comment) => {
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === _comment.article
+          (_article) => _article.id === articleId
         );
 
         article.populatedComments = article.populatedComments.filter(
-          (__comment) => __comment.id === _comment.id
+          (__comment) => __comment.id !== commentId
         );
 
-        this.updateArticles(articles);
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }
@@ -195,37 +206,33 @@ export class ArticlesService {
         })
       )
       .pipe(
-        tap((_reactions: Reaction[]) => {
-          const articles = { ...this.articles };
-
-          const article = articles['hydra:member'].find(
-            (_article) => _article['@id'] === articleIRI
-          );
-
-          article.populatedReactions = _reactions;
-
-          this.updateArticles(articles);
+        map((_reactions: Reaction[]) => {
+          return _reactions['hydra:member'];
         })
       );
   }
 
-  addReaction(reactionData: Reaction): Observable<Reaction> {
+  addReaction(articleId: number, reactionData: Reaction): Observable<Reaction> {
     return this.apiService.post('/reactions', reactionData).pipe(
       tap((_reaction: Reaction) => {
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === reactionData.article
+          (_article) => _article.id === articleId
         );
 
         article.populatedReactions.push(_reaction);
 
-        this.updateArticles(articles);
+        console.log('addRextion', article);
+
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }
 
   updateReaction(
+    articleId: number,
     reactionId: number,
     reactionData: Reaction
   ): Observable<Reaction> {
@@ -234,30 +241,38 @@ export class ArticlesService {
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === reactionData.article
+          (_article) => _article.id === articleId
         );
 
-        article.populatedReactions.push(_reaction);
+        const reactionIndex = article.populatedReactions.findIndex(
+          (__reaction) => __reaction.id === reactionId
+        );
 
-        this.updateArticles(articles);
+        article.populatedReactions[reactionIndex] = _reaction;
+
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }
 
-  deleteReaction(reactionId: number): Observable<Reaction> {
+  deleteReaction(articleId: number, reactionId: number): Observable<Reaction> {
     return this.apiService.delete(`/reactions/${reactionId}`).pipe(
-      tap((_reaction: Reaction) => {
+      tap(() => {
+        console.log('deleteReaction', articleId);
+
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === _reaction.article
+          (_article) => _article.id === articleId
         );
 
-        article.populatedComments = article.populatedComments.filter(
-          (__reaction) => __reaction.id === _reaction.id
+        article.populatedReactions = article.populatedReactions.filter(
+          (_reaction) => _reaction.id !== reactionId
         );
 
-        this.updateArticles(articles);
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }
@@ -274,66 +289,65 @@ export class ArticlesService {
         })
       )
       .pipe(
-        tap((_tags: Tag[]) => {
-          const articles = { ...this.articles };
-
-          const article = articles['hydra:member'].find(
-            (_article) => _article['@id'] === articleIRI
-          );
-
-          article.populatedTags = _tags;
-
-          this.updateArticles(articles);
+        map((_tags: Tag[]) => {
+          return _tags['hydra:member'];
         })
       );
   }
 
-  addTag(articleIRI: string, tagData: Tag): Observable<Tag> {
+  addTag(articleId: number, tagData: Tag): Observable<Tag> {
     return this.apiService.post('/tags', tagData).pipe(
       tap((_tag: Tag) => {
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === articleIRI
+          (_article) => _article.id === articleId
         );
 
         article.populatedTags.push(_tag);
 
-        this.updateArticles(articles);
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }
 
-  updateTag(articleIRI: string, tagId: number, tagData: Tag): Observable<Tag> {
+  updateTag(articleId: number, tagId: number, tagData: Tag): Observable<Tag> {
     return this.apiService.put(`/tags/${tagId}`, tagData).pipe(
       tap((_tag: Tag) => {
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === articleIRI
+          (_article) => _article.id === articleId
         );
 
-        article.populatedTags.push(_tag);
+        const tagIndex = article.populatedTags.findIndex(
+          (__tag) => __tag.id === _tag.id
+        );
 
-        this.updateArticles(articles);
+        article.populatedTags[tagIndex] = _tag;
+
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }
 
-  deleteTag(articleIRI: string, tagId: number): Observable<Tag> {
+  deleteTag(articleId: number, tagId: number): Observable<Tag> {
     return this.apiService.delete(`/tags/${tagId}`).pipe(
-      tap((_tag: Tag) => {
+      tap(() => {
         const articles = { ...this.articles };
 
         const article = articles['hydra:member'].find(
-          (_article) => _article['@id'] === articleIRI
+          (_article) => _article.id == articleId
         );
 
         article.populatedTags = article.populatedTags.filter(
-          (__tag) => __tag.id === _tag.id
+          (_tag) => _tag.id !== tagId
         );
 
-        this.updateArticles(articles);
+        this.articlesSubject.next(articles);
+        this.articleSubject.next(article);
       })
     );
   }

@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use \Datetime;
+
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
@@ -18,6 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource
  * @ApiFilter(SearchFilter::class, properties={"email": "exact", "username":"exact"})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="users")
  */
 class User
@@ -73,6 +76,8 @@ class User
      * @ORM\OneToMany(targetEntity="Reaction", mappedBy="user", cascade={"persist"})
      */
     public $reactions;
+
+
 
     public function __construct() {
         $this->articles = new ArrayCollection();
@@ -156,4 +161,15 @@ class User
         $_comment->user = null;
     }
 
+    /**
+    * @ORM\PrePersist
+    * @ORM\PreUpdate
+    */
+    public function updatedTimestamps(): void
+    {
+        $this->setUpdatedAt(new DateTime('now'));
+        if ($this->getCreatedAt() === null) {
+            $this->setCreatedAt(new DateTime('now'));
+        }
+    }
 }

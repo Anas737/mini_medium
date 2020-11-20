@@ -3,9 +3,8 @@ import { ListModel, Model } from './model';
 import { User } from './user';
 
 export class Reaction extends Model {
-  id: number;
-  type: string;
-  draft: boolean;
+  id?: number;
+  type?: string;
 
   article: string;
   user: string;
@@ -13,8 +12,8 @@ export class Reaction extends Model {
   populatedArticle?: Article;
   populatedUser?: User;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export class Reactions extends ListModel {

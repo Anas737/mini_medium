@@ -2,45 +2,80 @@
   <div *ngIf="!hasArticle">Select an article to display it here !</div>
 
   <article *ngIf="hasArticle">
-    <h1>{{ article.name }}</h1>
-    <p>Author: {{ article.user }} - Published at {{ article.createdAt }}</p>
+    <header class="d-flex justify-content-between">
+      <h1>{{ article.name }}</h1>
+
+      <div>
+        <a
+          *ngIf="isAdmin || isUser"
+          type="button"
+          [routerLink]="['edit', article.id]"
+          class="btn"
+        >
+          <i class="fas fa-edit"></i>
+        </a>
+
+        <button *ngIf="isUser" type="button" class="btn" (click)="onDelete()">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </header>
+
+    <p>
+      Author: {{ article.populatedUser.username }} - Published at
+      {{ article.createdAt }}
+    </p>
 
     <section class="mt-4">
       {{ article.content }}
 
       <footer class="reactions-container d-flex justify-content-end">
-        <span class="reaction">
+        <span class="reaction" (click)="onReact('love')">
           <i class="fas fa-heart"></i>
-          12
+          {{ lovesCount }}
         </span>
-        <span class="reaction">
+        <span class="reaction" (click)="onReact('insightful')">
           <i class="far fa-lightbulb"></i>
-          5
+          {{ insightfulsCount }}
         </span>
-        <span class="reaction">
+        <span class="reaction" (click)="onReact('like')">
           <i class="far fa-thumbs-up"></i>
-          3
+          {{ likesCount }}
         </span>
       </footer>
     </section>
 
     <section
-      class="comments-container d-flex flex-column justify-content-center p-2 mt-3"
+      class="comments-container d-flex flex-column justify-content-center px-4 py-2 mt-3"
     >
       <app-comment
         *ngFor="let comment of article.populatedComments"
         [comment]="comment"
+        [articleId]="article.id"
+        [articleAuthor]="article.user"
+        [currentUser]="currentUser['@id']"
+        [isAdmin]="isAdmin"
+        (editComment)="onEditComment(comment)"
       ></app-comment>
 
-      <form class="d-flex flex-column mt-4">
+      <form
+        [formGroup]="commentsForm"
+        (ngSubmit)="onAddComment()"
+        class="d-flex flex-column mt-4"
+      >
         <textarea
           name="comment-input"
           rows="3"
           placeholder="Write comment..."
           class="form-control"
+          formControlName="comment"
         ></textarea>
 
-        <button type="submit" class="btn btn-sm btn-secondary ml-auto mt-2">
+        <button
+          type="submit"
+          [disabled]="isSubmitting"
+          class="btn btn-sm btn-secondary ml-auto mt-2"
+        >
           Comment
         </button>
       </form>

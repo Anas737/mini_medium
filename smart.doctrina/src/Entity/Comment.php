@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use \Datetime;
+
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
@@ -16,6 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource
  * @ApiFilter(SearchFilter::class, properties={"article": "exact"})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="comments")
  */
 class Comment
@@ -82,5 +85,17 @@ class Comment
 
     public function getUpdatedAt() {
         return $this->updatedAt;
+    }
+
+    /**
+    * @ORM\PrePersist
+    * @ORM\PreUpdate
+    */
+    public function updatedTimestamps(): void
+    {
+        $this->setUpdatedAt(new DateTime('now'));
+        if ($this->getCreatedAt() === null) {
+            $this->setCreatedAt(new DateTime('now'));
+        }
     }
 }

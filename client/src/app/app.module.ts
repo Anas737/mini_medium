@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { HttpHeadersInterceptorProvider } from './interceptors';
 import { HttpClientModule } from '@angular/common/http';
 import { CommentComponent } from './home/article/comment/comment.component';
+import { AddArticleComponent } from './home/article/add-article/add-article.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { CommentComponent } from './home/article/comment/comment.component';
     SearchArticleComponent,
     AuthComponent,
     CommentComponent,
+    AddArticleComponent,
   ],
   imports: [
     BrowserModule,

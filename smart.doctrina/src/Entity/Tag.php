@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use \Datetime;
+
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
@@ -17,6 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource
  * @ApiFilter(SearchFilter::class, properties={"articles": "partial"})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="tags")
  */
 class Tag
@@ -92,5 +95,17 @@ class Tag
     public function removeArticle(Article $_article) {
         $this->articles->removeElement($_article);
         $_article->tags->removeElement($this);
+    }
+
+    /**
+    * @ORM\PrePersist
+    * @ORM\PreUpdate
+    */
+    public function updatedTimestamps(): void
+    {
+        $this->setUpdatedAt(new DateTime('now'));
+        if ($this->getCreatedAt() === null) {
+            $this->setCreatedAt(new DateTime('now'));
+        }
     }
 }

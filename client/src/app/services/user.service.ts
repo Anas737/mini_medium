@@ -24,6 +24,10 @@ export class UserService {
     return this.userSubject.asObservable().pipe(distinctUntilChanged());
   }
 
+  get isAuthenticated(): boolean {
+    return this.isAuthenticatedSubject.value;
+  }
+
   get isAuthenticated$(): Observable<boolean> {
     return this.isAuthenticatedSubject
       .asObservable()

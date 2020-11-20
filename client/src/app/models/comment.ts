@@ -3,9 +3,9 @@ import { ListModel, Model } from './model';
 import { User } from './user';
 
 export class Comment extends Model {
-  id: number;
+  id?: number;
   content: string;
-  draft: boolean;
+  draft?: boolean;
 
   article: string;
   user: string;
@@ -13,8 +13,8 @@ export class Comment extends Model {
   populatedArticle?: Article;
   populatedUser?: User;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Comments extends ListModel {

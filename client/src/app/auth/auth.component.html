@@ -28,7 +28,6 @@
             <input
               type="text"
               class="form-control"
-              id="username"
               placeholder="Enter username"
               formControlName="username"
             />
@@ -40,7 +39,6 @@
             <input
               type="email"
               class="form-control"
-              id="email"
               placeholder="Enter email"
               formControlName="email"
             />
@@ -52,7 +50,6 @@
             <input
               type="password"
               class="form-control"
-              id="password"
               placeholder="Enter password"
               formControlName="password"
             />
@@ -64,17 +61,43 @@
             <input
               type="password"
               class="form-control"
-              id="confirmPassword"
               placeholder="Confirm password"
               formControlName="confirmPassword"
             />
+            <small class="form-text text-muted">Errors</small>
+          </fieldset>
+
+          <fieldset *ngIf="isForRegistering" class="form-group">
+            <label for="role">Role</label>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="role"
+                id="admin-user"
+                value="Admin"
+                formControlName="role"
+              />
+              <label class="form-check-label" for="admin-user">Admin</label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="role"
+                id="user-role"
+                value="User"
+                formControlName="role"
+              />
+              <label class="form-check-label" for="user-role">User</label>
+            </div>
             <small class="form-text text-muted">Errors</small>
           </fieldset>
         </div>
         <!-- End Form Controls -->
 
         <!-- Submit button -->
-        <button class="btn btn-sm btn-info ml-auto">
+        <button [disabled]="isSubmitting" class="btn btn-sm btn-info ml-auto">
           <span *ngIf="isForRegistering; then register; else signin"></span>
 
           <ng-template #register>Create account</ng-template>
