@@ -5,3 +5,8 @@
 .filter-input {
   min-width: 100px;
 }
+
+.article-list {
+  overflow-y: scroll;
+  height: 500px;
+}

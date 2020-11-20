@@ -66,6 +66,7 @@ export class ArticleComponent implements OnInit, OnDestroy {
 
     this.articleSub = this.articlesService.displayedArticle$.subscribe(
       (_article) => {
+        console.log('nezaneaze', _article);
         this.article = _article;
 
         const _articlesReactions = {
@@ -91,7 +92,7 @@ export class ArticleComponent implements OnInit, OnDestroy {
     });
   }
 
-  onAddComment() {
+  onSubmit() {
     if (!this.userService.isAuthenticated) return;
 
     this.isSubmitting = true;

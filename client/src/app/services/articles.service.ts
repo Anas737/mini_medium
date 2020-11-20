@@ -82,17 +82,25 @@ export class ArticlesService {
   query() {}
 
   getOne(articleId: number): Observable<Article> {
-    return this.apiService
-      .get(`/articles${articleId}`)
-      .pipe(tap((_article) => this.articleSubject.next(_article)));
+    return this.apiService.get(`/articles/${articleId}`);
   }
 
   create(articleData: Article): Observable<Article> {
-    return this.apiService.post('articles', articleData);
+    return this.apiService.post('/articles', articleData);
   }
 
   update(articleId: number, articleData: Article): Observable<Article> {
-    return this.apiService.put(`/articles/${articleId}`, articleData);
+    return this.apiService.put(`/articles/${articleId}`, articleData).pipe(
+      tap((_article) => {
+        const article = {
+          ...this.displayedArticle,
+          content: _article.content,
+          name: _article.name,
+        };
+
+        this.articleSubject.next(article);
+      })
+    );
   }
 
   delete(articleId: number): Observable<Article> {

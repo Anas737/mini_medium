@@ -11,6 +11,10 @@
 
   <hr />
 
+  <div class="d-flex justify-content-end mb-2">
+    <a [routerLink]="['add']" class="btn"><i class="fas fa-plus"></i></a>
+  </div>
+
   <section class="article-list">
     <app-search-article
       *ngFor="let article of articles"

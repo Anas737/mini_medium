@@ -1,1 +1,39 @@
-<p>add-article works!</p>
+<div class="container mt-4">
+  <div class="card card-body">
+    <h3 class="card-title">Add/Edit an article</h3>
+    <form
+      [formGroup]="articleForm"
+      (ngSubmit)="onSubmit()"
+      class="d-flex flex-column mt-4"
+    >
+      <fieldset class="form-group">
+        <label for="title">Title</label>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Title"
+          formControlName="name"
+        />
+      </fieldset>
+
+      <fieldset class="form-group">
+        <label for="content">Content</label>
+        <textarea
+          name="article-input"
+          rows="10"
+          placeholder="Write article..."
+          class="form-control"
+          formControlName="content"
+        ></textarea>
+      </fieldset>
+
+      <button
+        type="submit"
+        [disabled]="isSubmitting"
+        class="btn btn-sm btn-info ml-auto mt-2"
+      >
+        Publish
+      </button>
+    </form>
+  </div>
+</div>
